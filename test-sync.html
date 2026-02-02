@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Sync</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>PureFlow POS Sync Test</h1>
+    <div id="status">Testing connection...</div>
+    <button onclick="testConnection()">Test Connection</button>
+    <button onclick="makeTestSale()">Make Test Sale</button>
+    <div id="result"></div>
+    
+    <script>
+        const supabase = supabase.createClient(
+            'https://YOUR_PROJECT_ID.supabase.co',
+            'YOUR_ANON_KEY'
+        );
+        
+        async function testConnection() {
+            const { data, error } = await supabase
+                .from('settings')
+                .select('store_name')
+                .single();
+            
+            if (error) {
+                document.getElementById('status').innerHTML = 
+                    `❌ Connection failed: ${error.message}`;
+            } else {
+                document.getElementById('status').innerHTML = 
+                    `✅ Connected! Store: ${data.store_name}`;
+            }
+        }
+        
+        async function makeTestSale() {
+            const sale = {
+                customer_name: 'Test Customer',
+                customer_type: 'regular',
+                quantity: 1,
+                amount: 15.00,
+                processed_by: 'test',
+                user_role: 'test',
+                device_id: 'test-device'
+            };
+            
+            const { data, error } = await supabase
+                .from('sales')
+                .insert([sale]);
+            
+            if (error) {
+                document.getElementById('result').innerHTML = 
+                    `❌ Sale failed: ${error.message}`;
+            } else {
+                document.getElementById('result').innerHTML = 
+                    `✅ Test sale created! ID: ${data[0].id}`;
+            }
+        }
+        
+        // Auto-test on load
+        testConnection();
+    </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PureFlow POS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.4/dist/umd/supabase.min.js"></script>
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(() => console.log('Service Worker Registered'))
+                .catch(err => console.log('Service Worker Error:', err));
+        }
+    </script>
+</head>
+<body>
+    <!-- Your existing HTML content remains exactly the same -->
+    <!-- Only the script tag at the bottom changes -->
+    
+    <script src="supabase-config.js"></script>
+    <script src="script-with-sync.js"></script>
+</body>
+</html>

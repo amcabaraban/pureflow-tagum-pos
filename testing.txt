@@ -1,0 +1,22 @@
+
+## Testing Sync:
+1. **Online Test:** Make a sale on mobile, check PC
+2. **Offline Test:** Turn off WiFi, make sales, turn WiFi back on
+3. **Conflict Test:** Make same sale on both devices while offline
+
+## Troubleshooting:
+1. **No sync?** Check browser console for errors
+2. **Connection failed?** Verify API keys in supabase-config.js
+3. **Data not showing?** Check Supabase tables in dashboard
+4. **Offline not working?** Check Service Worker registration
+
+## Security Notes:
+1. The anon key is safe to use in frontend
+2. All tables have RLS (Row Level Security) enabled
+3. For production, consider adding authentication
+4. Regularly backup your Supabase data
+
+## Support:
+- Supabase Docs: https://supabase.com/docs
+- Issues: Check browser console errors
+- Testing: Use two different browsers or devices

@@ -1,0 +1,24 @@
+{
+  "name": "pureflow-pos",
+  "version": "2.0.0",
+  "description": "Real-time synchronized POS for water refilling business",
+  "main": "index.html",
+  "scripts": {
+    "start": "live-server --port=8080",
+    "deploy": "gh-pages -d ."
+  },
+  "keywords": [
+    "pos",
+    "water-refilling",
+    "realtime",
+    "sync",
+    "offline",
+    "pwa"
+  ],
+  "author": "PureFlow POS Team",
+  "license": "MIT",
+  "devDependencies": {
+    "gh-pages": "^5.0.0",
+    "live-server": "^1.2.2"
+  }
+}

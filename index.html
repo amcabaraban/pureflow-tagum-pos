@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PureFlow POS - Water Refilling Business</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.4/dist/umd/supabase.min.js"></script>
+    <style>
+        /* Inline critical CSS for faster loading */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">
+        <div style="text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 20px;">💧</div>
+            <div>Loading PureFlow POS...</div>
+        </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <div class="logo-circle">
+                    <i class="fas fa-tint" style="font-size: 40px; color: #007bff;"></i>
+                </div>
+                <h1>PureFlow POS</h1>
+                <p class="subtitle">Water Refilling Business Management</p>
+            </div>
+
+            <div class="login-tabs">
+                <button class="login-tab-btn active" onclick="showLoginTab('staff')">
+                    <i class="fas fa-user-tie"></i> Staff Login
+                </button>
+                <button class="login-tab-btn" onclick="showLoginTab('client')">
+                    <i class="fas fa-users"></i> Client Order
+                </button>
+            </div>
+
+            <!-- Staff Login -->
+            <div id="staffLoginForm" class="login-form">
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Username</label>
+                    <input type="text" id="username" placeholder="Enter username" value="admin">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-lock"></i> Password</label>
+                    <input type="password" id="password" placeholder="Enter password" value="admin123">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-user-tag"></i> Role</label>
+                    <select id="userRole">
+                        <option value="admin">Administrator</option>
+                        <option value="cashier">Cashier</option>
+                    </select>
+                </div>
+                <button class="btn-login" onclick="staffLogin()">
+                    <i class="fas fa-sign-in-alt"></i> Login as Staff
+                </button>
+            </div>
+
+            <!-- Client Login -->
+            <div id="clientLoginForm" class="login-form" style="display: none;">
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Your Name</label>
+                    <input type="text" id="clientName" placeholder="Enter your name">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-phone"></i> Phone Number</label>
+                    <input type="tel" id="clientPhone" placeholder="0912-345-6789">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-map-marker-alt"></i> Delivery Address</label>
+                    <textarea id="clientAddress" placeholder="Enter complete address" rows="2"></textarea>
+                </div>
+                <button class="btn-login client" onclick="clientLogin()">
+                    <i class="fas fa-shopping-cart"></i> Start Ordering
+                </button>
+            </div>
+
+            <div class="login-footer">
+                <p><i class="fas fa-info-circle"></i> Demo: admin/admin123 or cashier/cashier123</p>
+                <p><i class="fas fa-sync-alt"></i> All data syncs automatically between devices</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main POS System -->
+    <div id="appContainer" class="container" style="display: none;">
+        <header class="header">
+            <div class="header-left">
+                <div class="logo-circle small">
+                    <i class="fas fa-tint"></i>
+                </div>
+                <div>
+                    <h1 id="storeTitle">PureFlow Water Station</h1>
+                    <div class="date-time" id="currentDate"></div>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <span class="user-badge" id="currentUserRole">Admin</span>
+                    <div class="sync-status">
+                        <i class="fas fa-wifi" id="syncIcon"></i>
+                        <span id="syncStatus">Online</span>
+                    </div>
+                    <button class="btn-icon logout" onclick="logout()" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-btn active" onclick="showSection('dashboard')">
+                <i class="fas fa-home"></i> Dashboard
+            </button>
+            <button class="tab-btn" onclick="showSection('sales')">
+                <i class="fas fa-cash-register"></i> New Sale
+            </button>
+            <button class="tab-btn" onclick="showSection('orders')">
+                <i class="fas fa-clipboard-list"></i> Orders
+            </button>
+            <button class="tab-btn" onclick="showSection('customers')">
+                <i class="fas fa-users"></i> Customers
+            </button>
+            <button class="tab-btn" onclick="showSection('reports')">
+                <i class="fas fa-chart-bar"></i> Reports
+            </button>
+            <button class="tab-btn" onclick="showSection('settings')">
+                <i class="fas fa-cog"></i> Settings
+            </button>
+        </nav>
+
+        <main class="main-content">
+            <!-- Dashboard -->
+            <section id="dashboard" class="content-section active">
+                <div class="welcome-card">
+                    <h2><i class="fas fa-hand-wave"></i> Welcome back, <span id="welcomeUser">Admin</span>!</h2>
+                    <p>Today's overview of your water refilling business</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card primary">
+                        <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="todayRevenue">₱0</div>
+                            <div class="stat-label">Today's Revenue</div>
+                        </div>
+                    </div>
+                    <div class="stat-card success">
+                        <div class="stat-icon"><i class="fas fa-shopping-cart"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="todaySales">0</div>
+                            <div class="stat-label">Today's Sales</div>
+                        </div>
+                    </div>
+                    <div class="stat-card info">
+                        <div class="stat-icon"><i class="fas fa-users"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="totalCustomers">0</div>
+                            <div class="stat-label">Total Customers</div>
+                        </div>
+                    </div>
+                    <div class="stat-card warning">
+                        <div class="stat-icon"><i class="fas fa-clipboard-check"></i></div>
+                        <div class="stat-content">
+                            <div class="stat-value" id="pendingOrders">0</div>
+                            <div class="stat-label">Pending Orders</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="showSection('sales')">
+                            <i class="fas fa-plus-circle"></i> New Sale
+                        </button>
+                        <button class="action-btn" onclick="showAddCustomerModal()">
+                            <i class="fas fa-user-plus"></i> Add Customer
+                        </button>
+                        <button class="action-btn" onclick="printDailyReport()">
+                            <i class="fas fa-print"></i> Print Report
+                        </button>
+                        <button class="action-btn" onclick="backupData()">
+                            <i class="fas fa-download"></i> Backup Data
+                        </button>
+                    </div>
+                </div>
+
+                <div class="recent-activity">
+                    <h3><i class="fas fa-history"></i> Recent Activity</h3>
+                    <div class="activity-list" id="recentActivity">
+                        <div class="activity-item">
+                            <i class="fas fa-info-circle"></i>
+                            <span>No recent activity yet</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- New Sale -->
+            <section id="sales" class="content-section">
+                <div class="card">
+                    <h2><i class="fas fa-cash-register"></i> New Water Sale</h2>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-user"></i> Customer Name</label>
+                            <input type="text" id="saleCustomer" placeholder="Enter customer name or select" list="customerList">
+                            <datalist id="customerList"></datalist>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-tag"></i> Customer Type</label>
+                            <select id="saleCustomerType" onchange="calculateSaleTotal()">
+                                <option value="regular">Regular (₱15/gallon)</option>
+                                <option value="suki">Suki/Loyal (₱13.50/gallon)</option>
+                                <option value="bulk">Bulk Order (₱12/gallon)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-water"></i> Container Size</label>
+                        <select id="containerSize" onchange="calculateSaleTotal()">
+                            <option value="5">5 Gallon Container</option>
+                            <option value="3">3 Gallon Container</option>
+                            <option value="1">1 Gallon Container</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-boxes"></i> Quantity</label>
+                        <div class="quantity-selector">
+                            <button class="qty-btn" onclick="adjustSaleQuantity(-1)"><i class="fas fa-minus"></i></button>
+                            <input type="number" id="saleQuantity" value="1" min="1" onchange="calculateSaleTotal()">
+                            <button class="qty-btn" onclick="adjustSaleQuantity(1)"><i class="fas fa-plus"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="total-display">
+                        <div class="total-label">Total Amount</div>
+                        <div class="total-amount">₱<span id="saleTotal">15.00</span></div>
+                    </div>
+
+                    <button class="btn-primary large" onclick="processSale()">
+                        <i class="fas fa-check-circle"></i> Complete Sale
+                    </button>
+                </div>
+
+                <div class="card">
+                    <h3><i class="fas fa-history"></i> Today's Sales</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Customer</th>
+                                    <th>Qty</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="todaySalesList">
+                                <tr><td colspan="4" class="empty">No sales today</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Orders Management -->
+            <section id="orders" class="content-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-clipboard-list"></i> Client Orders</h2>
+                        <div class="filter-controls">
+                            <select id="orderFilter" onchange="filterOrders()">
+                                <option value="all">All Orders</option>
+                                <option value="pending">Pending</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="delivered">Delivered</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Client</th>
+                                    <th>Items</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTable">
+                                <tr><td colspan="7" class="empty">No orders found</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Customers -->
+            <section id="customers" class="content-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-users"></i> Customer Management</h2>
+                        <button class="btn-primary" onclick="showAddCustomerModal()">
+                            <i class="fas fa-user-plus"></i> Add Customer
+                        </button>
+                    </div>
+
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="customerSearch" placeholder="Search customers..." oninput="searchCustomers()">
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>Address</th>
+                                    <th>Type</th>
+                                    <th>Total Spent</th>
+                                    <th>Last Order</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customersTable">
+                                <tr><td colspan="7" class="empty">No customers yet</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Reports -->
+            <section id="reports" class="content-section">
+                <div class="card">
+                    <h2><i class="fas fa-chart-bar"></i> Sales Reports</h2>
+                    
+                    <div class="report-controls">
+                        <div class="form-group">
+                            <label>Report Period</label>
+                            <select id="reportPeriod" onchange="generateReport()">
+                                <option value="today">Today</option>
+                                <option value="week">This Week</option>
+                                <option value="month">This Month</option>
+                                <option value="year">This Year</option>
+                                <option value="all">All Time</option>
+                            </select>
+                        </div>
+                        
+                        <div class="btn-group">
+                            <button class="btn-secondary" onclick="exportReport('csv')">
+                                <i class="fas fa-file-csv"></i> Export CSV
+                            </button>
+                            <button class="btn-secondary" onclick="exportReport('pdf')">
+                                <i class="fas fa-file-pdf"></i> Export PDF
+                            </button>
+                            <button class="btn-secondary" onclick="printReport()">
+                                <i class="fas fa-print"></i> Print
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="report-summary">
+                        <div class="summary-item">
+                            <div class="summary-label">Total Sales</div>
+                            <div class="summary-value" id="reportTotalSales">0</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">Total Revenue</div>
+                            <div class="summary-value" id="reportTotalRevenue">₱0.00</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">Avg. Sale</div>
+                            <div class="summary-value" id="reportAvgSale">₱0.00</div>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Customer</th>
+                                    <th>Type</th>
+                                    <th>Quantity</th>
+                                    <th>Amount</th>
+                                    <th>Processed By</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportTable">
+                                <tr><td colspan="6" class="empty">No data for selected period</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings -->
+            <section id="settings" class="content-section">
+                <div class="card">
+                    <h2><i class="fas fa-cog"></i> Settings</h2>
+                    
+                    <div class="settings-form">
+                        <div class="form-group">
+                            <label><i class="fas fa-store"></i> Store Name</label>
+                            <input type="text" id="settingStoreName" placeholder="Enter store name">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label><i class="fas fa-tag"></i> Regular Price (₱)</label>
+                                <input type="number" id="settingRegularPrice" value="15" min="1">
+                            </div>
+                            <div class="form-group">
+                                <label><i class="fas fa-percentage"></i> Suki Discount (%)</label>
+                                <input type="number" id="settingSukiDiscount" value="10" min="0" max="100">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label><i class="fas fa-percentage"></i> Bulk Discount (%)</label>
+                            <input type="number" id="settingBulkDiscount" value="20" min="0" max="100">
+                        </div>
+
+                        <button class="btn-primary" onclick="saveSettings()">
+                            <i class="fas fa-save"></i> Save Settings
+                        </button>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3><i class="fas fa-database"></i> Data Management</h3>
+                        <div class="data-actions">
+                            <button class="btn-secondary" onclick="backupData()">
+                                <i class="fas fa-download"></i> Backup All Data
+                            </button>
+                            <button class="btn-secondary" onclick="restoreData()">
+                                <i class="fas fa-upload"></i> Restore Data
+                            </button>
+                            <button class="btn-danger" onclick="clearLocalData()">
+                                <i class="fas fa-trash"></i> Clear Local Data
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3><i class="fas fa-sync-alt"></i> Sync Status</h3>
+                        <div class="sync-info">
+                            <div class="sync-item">
+                                <span>Last Sync:</span>
+                                <span id="lastSyncTime">Never</span>
+                            </div>
+                            <div class="sync-item">
+                                <span>Sync Status:</span>
+                                <span id="syncStatusInfo">Online</span>
+                            </div>
+                            <div class="sync-item">
+                                <span>Pending Sync:</span>
+                                <span id="pendingSyncCount">0 items</span>
+                            </div>
+                        </div>
+                        <button class="btn-secondary" onclick="forceSync()">
+                            <i class="fas fa-sync"></i> Force Sync Now
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Add Customer Modal -->
+        <div id="addCustomerModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-user-plus"></i> Add New Customer</h3>
+                    <button class="modal-close" onclick="closeModal('addCustomerModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        <input type="text" id="newCustomerName" placeholder="Enter customer name">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="newCustomerPhone" placeholder="0912-345-6789">
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <textarea id="newCustomerAddress" placeholder="Enter address" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Customer Type</label>
+                        <select id="newCustomerType">
+                            <option value="regular">Regular</option>
+                            <option value="suki">Suki (Loyal)</option>
+                            <option value="bulk">Bulk Buyer</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary" onclick="closeModal('addCustomerModal')">Cancel</button>
+                    <button class="btn-primary" onclick="saveNewCustomer()">Save Customer</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Update Order Modal -->
+        <div id="updateOrderModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-edit"></i> Update Order Status</h3>
+                    <button class="modal-close" onclick="closeModal('updateOrderModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Order ID</label>
+                        <input type="text" id="updateOrderId" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Client Name</label>
+                        <input type="text" id="updateOrderClient" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Status *</label>
+                        <select id="updateOrderStatus">
+                            <option value="pending">Pending</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="processing">Processing</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Delivery Person (if delivered)</label>
+                        <input type="text" id="updateDeliveryPerson" placeholder="Enter name">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary" onclick="closeModal('updateOrderModal')">Cancel</button>
+                    <button class="btn-primary" onclick="saveOrderUpdate()">Update Status</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Notification -->
+        <div id="toast" class="toast"></div>
+    </div>
+
+    <!-- Client Interface -->
+    <div id="clientInterface" class="container" style="display: none;">
+        <header class="header client">
+            <div class="header-left">
+                <div class="logo-circle small">
+                    <i class="fas fa-tint"></i>
+                </div>
+                <div>
+                    <h1>PureFlow Water Delivery</h1>
+                    <div class="date-time" id="clientDate"></div>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <span class="user-badge client" id="clientUserName">Guest</span>
+                    <button class="btn-icon logout" onclick="clientLogout()" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-btn active" onclick="showClientSection('order')">
+                <i class="fas fa-shopping-cart"></i> Order Water
+            </button>
+            <button class="tab-btn" onclick="showClientSection('myorders')">
+                <i class="fas fa-history"></i> My Orders
+            </button>
+            <button class="tab-btn" onclick="showClientSection('profile')">
+                <i class="fas fa-user"></i> My Profile
+            </button>
+        </nav>
+
+        <main class="main-content">
+            <!-- Order Water -->
+            <section id="clientOrder" class="content-section active">
+                <div class="card">
+                    <h2><i class="fas fa-tint"></i> Order PureFlow Water</h2>
+                    
+                    <div class="customer-info">
+                        <p><strong>Ordering as:</strong> <span id="orderClientName"></span></p>
+                        <p><strong>Delivery to:</strong> <span id="orderClientAddress"></span></p>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-water"></i> Container Size</label>
+                        <select id="clientContainerSize" onchange="calculateClientTotal()">
+                            <option value="5">5 Gallon - ₱15.00</option>
+                            <option value="3">3 Gallon - ₱10.00</option>
+                            <option value="1">1 Gallon - ₱5.00</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-boxes"></i> Quantity</label>
+                        <div class="quantity-selector">
+                            <button class="qty-btn" onclick="adjustClientQuantity(-1)"><i class="fas fa-minus"></i></button>
+                            <input type="number" id="clientOrderQuantity" value="1" min="1" onchange="calculateClientTotal()">
+                            <button class="qty-btn" onclick="adjustClientQuantity(1)"><i class="fas fa-plus"></i></button>
+                        </div>
+                        <small class="hint">Bulk discount: 10+ items get 10% off!</small>
+                    </div>
+
+                    <div class="total-display client">
+                        <div class="total-label">Order Total</div>
+                        <div class="total-amount">₱<span id="clientOrderTotal">15.00</span></div>
+                    </div>
+
+                    <button class="btn-primary large" onclick="submitClientOrder()">
+                        <i class="fas fa-paper-plane"></i> Submit Order
+                    </button>
+                </div>
+
+                <div class="card">
+                    <h3><i class="fas fa-info-circle"></i> Delivery Information</h3>
+                    <ul class="info-list">
+                        <li><i class="fas fa-clock"></i> Same-day delivery for orders before 3 PM</li>
+                        <li><i class="fas fa-truck"></i> Free delivery for orders above ₱200</li>
+                        <li><i class="fas fa-phone"></i> We'll call to confirm your order</li>
+                        <li><i class="fas fa-shield-alt"></i> 100% purified water guaranteed</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- My Orders -->
+            <section id="clientMyOrders" class="content-section">
+                <div class="card">
+                    <h2><i class="fas fa-history"></i> My Orders</h2>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Date</th>
+                                    <th>Items</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="clientOrdersTable">
+                                <tr><td colspan="5" class="empty">No orders yet</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- My Profile -->
+            <section id="clientProfile" class="content-section">
+                <div class="card">
+                    <h2><i class="fas fa-user"></i> My Profile</h2>
+                    
+                    <div class="profile-form">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="clientProfileName" placeholder="Your name">
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="tel" id="clientProfilePhone" placeholder="0912-345-6789">
+                        </div>
+                        <div class="form-group">
+                            <label>Delivery Address</label>
+                            <textarea id="clientProfileAddress" placeholder="Your address" rows="3"></textarea>
+                        </div>
+                        <button class="btn-primary" onclick="updateClientProfile()">
+                            <i class="fas fa-save"></i> Update Profile
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Add this before your existing scripts -->
+<script src="realtime-sync.js"></script>
+<script src="supabase-config.js"></script>
+<script src="script.js"></script>
+
+<script>
+    // Auto-refresh when tab becomes visible
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden && window.isOnline) {
+            console.log('Tab active - syncing data...');
+            if (window.realtimeSync) {
+                window.realtimeSync.syncNow();
+            }
+        }
+    });
+    
+    // Auto-refresh every 30 seconds when tab is active
+    setInterval(() => {
+        if (!document.hidden && window.isOnline && window.realtimeSync) {
+            window.realtimeSync.syncNow();
+        }
+    }, 30000);
+</script>
+
+    </script>
+</body>
+</html>
