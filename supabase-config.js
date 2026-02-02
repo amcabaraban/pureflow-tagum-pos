@@ -1,7 +1,7 @@
 // ==================== SUPABASE CONFIGURATION ====================
 // Replace these with your actual Supabase credentials
 const SUPABASE_CONFIG = {
-    url: 'https://'hkwwqbydrpwuqptzqhhl',
+    url: 'https://'hkwwqbydrpwuqptzqhhl.supabase.co',
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6bWFqcWVrYmVuZW12Z2Ntc2Z2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxMzM0MjYsImV4cCI6MjA4NDcwOTQyNn0.C4eTv94WVwT94OOz23LUOYPj8265wp2xJOU1goISkOg' // From Supabase Settings > API
 };
 
@@ -144,3 +144,4 @@ window.addEventListener('offline', () => {
     showToast('⚠️ You are offline - working locally', 'warning');
 
 });
+
