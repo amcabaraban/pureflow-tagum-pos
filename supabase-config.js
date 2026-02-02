@@ -1,8 +1,8 @@
 // ==================== SUPABASE CONFIGURATION ====================
 // Replace these with your actual Supabase credentials
 const SUPABASE_CONFIG = {
-    url: 'https://'hkwwqbydrpwuqptzqhhl.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp6bWFqcWVrYmVuZW12Z2Ntc2Z2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxMzM0MjYsImV4cCI6MjA4NDcwOTQyNn0.C4eTv94WVwT94OOz23LUOYPj8265wp2xJOU1goISkOg' // From Supabase Settings > API
+    url: 'https://hkwwqbydrpwuqptzqhhl.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhrd3dxYnlkcnB3dXFwdHpxaGhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxMzI2MzksImV4cCI6MjA4NDcwODYzOX0.Gbz84QaGeQuYPjtzPhc8h1Zmn-y0__qalMxu-kFt2V4' // From Supabase Settings > API
 };
 
 // ==================== DO NOT EDIT BELOW ====================
@@ -144,4 +144,5 @@ window.addEventListener('offline', () => {
     showToast('⚠️ You are offline - working locally', 'warning');
 
 });
+
 
